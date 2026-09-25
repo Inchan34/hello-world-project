@@ -122,6 +122,19 @@
     border-radius: 0 0 0 14px; transform: skewX(20deg);
   }
   .code-panel.locked { background: #e9e7ef; }
+
+  /* 결과 유형별 장면: 배경 테마 + 장식 + 소품 + 마스코트 자세 */
+  .code-panel { container-type: size; }
+  .code-panel .deco { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .code-panel.scene pre { opacity: .5; }
+  .code-panel.dark pre { color: #d9d6ff; opacity: .35; }
+  .code-panel.dark .kw { color: #b8cfff; }
+  .code-panel .mascot { transform: translateX(-50%) var(--pose, rotate(0deg)); transform-origin: 50% 100%; }
+  .code-panel.scene .badge { font-size: 24cqh; left: 5%; bottom: 6%; }
+  .code-panel .prop {
+    position: absolute; z-index: 2; line-height: 1; transform: rotate(var(--r, 0deg));
+    filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(2px 3px 0 rgba(63, 61, 86, .18));
+  }
   .code-panel.locked pre { opacity: .5; }
   .code-panel.locked .char { opacity: .45; filter: grayscale(1); }
 
@@ -421,6 +434,78 @@ const QUESTIONS = [
 ];
 
 const MASCOT = 'images/mascot_new.png';
+// 결과 유형별 장면 (배경, 장식 SVG, 소품 이모지, 마스코트 자세)
+// 소품 위치: l/t = 패널 기준 %, s = 패널 높이 대비 크기(%), r = 회전 각도
+const STAR = (x, y, r = 6, c = '#fff') => `<path d="M${x} ${y - r} L${x + r * .3} ${y - r * .3} L${x + r} ${y} L${x + r * .3} ${y + r * .3} L${x} ${y + r} L${x - r * .3} ${y + r * .3} L${x - r} ${y} L${x - r * .3} ${y - r * .3}Z" fill="${c}"/>`;
+const SCENES = {
+  debugger: {
+    dark: true,
+    bg: 'linear-gradient(160deg, #5d5a91 0%, #8b85c9 100%)',
+    deco: `<path d="M352 128 a28 28 0 1 0 24 44 a22 22 0 1 1 -24 -44z" fill="#fff3bf"/>
+      ${STAR(40, 170, 5)}${STAR(230, 22, 6)}${STAR(300, 190, 4)}${STAR(250, 110, 3)}${STAR(20, 40, 3)}
+      <circle cx="150" cy="185" r="2.5" fill="#fff" opacity=".8"/><circle cx="380" cy="100" r="2" fill="#fff" opacity=".8"/>`,
+    props: [{ e: '☕', l: 76, t: 58, s: 20, r: 10 }, { e: '🐛', l: 30, t: 8, s: 13, r: -15 }],
+    pose: 'rotate(-4deg)',
+  },
+  algo: {
+    bg: 'repeating-conic-gradient(from 0deg at 50% 70%, #fff6cf 0deg 12deg, #ffe9a3 12deg 24deg)',
+    deco: `<g opacity=".9">
+      <rect x="40" y="30" width="8" height="14" rx="2" fill="#f59cc4" transform="rotate(20 44 37)"/>
+      <rect x="320" y="150" width="8" height="14" rx="2" fill="#7fb6e0" transform="rotate(-25 324 157)"/>
+      <rect x="120" y="170" width="8" height="14" rx="2" fill="#7fd3aa" transform="rotate(40 124 177)"/>
+      <rect x="250" y="30" width="8" height="14" rx="2" fill="#9d95f0" transform="rotate(-10 254 37)"/>
+      <circle cx="90" cy="110" r="4" fill="#f28b8b"/><circle cx="360" cy="80" r="4" fill="#7fb6e0"/>
+      ${STAR(200, 20, 9, '#f5c451')}${STAR(60, 150, 7, '#f5c451')}</g>`,
+    props: [{ e: '🥇', l: 76, t: 58, s: 21, r: 12 }, { e: '⭐', l: 32, t: 6, s: 13, r: -10 }],
+    pose: 'translateY(-3%) scale(1.02)',
+  },
+  startup: {
+    bg: 'linear-gradient(160deg, #ffe7d6 0%, #ffcfdc 100%)',
+    deco: `<g transform="translate(290 105)">
+        <rect x="0" y="60" width="16" height="30" rx="3" fill="#fff" stroke="#3f3d56" stroke-width="2.5"/>
+        <rect x="24" y="40" width="16" height="50" rx="3" fill="#ffd6e5" stroke="#3f3d56" stroke-width="2.5"/>
+        <rect x="48" y="16" width="16" height="74" rx="3" fill="#f28b8b" stroke="#3f3d56" stroke-width="2.5"/>
+        <polyline points="-4,50 20,30 44,8 70,-12" fill="none" stroke="#3f3d56" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="58,-14 70,-12 68,0" fill="none" stroke="#3f3d56" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+      <path d="M20 190 q30 -20 60 0" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".7"/>`,
+    props: [{ e: '💰', l: 30, t: 8, s: 15, r: -10 }],
+    pose: 'scaleX(-1)',
+  },
+  design: {
+    bg: 'linear-gradient(160deg, #ffe3f1 0%, #e9defe 100%)',
+    deco: `<path d="M-10 175 C 60 140, 120 205, 200 170 S 330 140, 410 175" fill="none" stroke="#ffc6e0" stroke-width="18" stroke-linecap="round"/>
+      <path d="M-10 198 C 70 170, 140 225, 220 195 S 340 170, 410 200" fill="none" stroke="#b3dcf7" stroke-width="14" stroke-linecap="round"/>
+      <g stroke="#3f3d56" stroke-width="2.5">
+        <circle cx="300" cy="118" r="11" fill="#ffb8b8"/><circle cx="326" cy="118" r="11" fill="#ffe08f"/>
+        <circle cx="352" cy="118" r="11" fill="#aeeacc"/><circle cx="378" cy="118" r="11" fill="#c3bdff"/></g>`,
+    props: [{ e: '🖌️', l: 30, t: 6, s: 15, r: 20 }, { e: '✨', l: 80, t: 70, s: 14, r: 0 }],
+    pose: 'rotate(5deg)',
+  },
+  ai: {
+    bg: 'linear-gradient(160deg, #dcf8ec 0%, #cdeafe 100%)',
+    deco: `<g transform="translate(285 95)" stroke="#3f3d56" stroke-width="2">
+        <g opacity=".55"><line x1="0" y1="10" x2="45" y2="0"/><line x1="0" y1="10" x2="45" y2="40"/><line x1="0" y1="10" x2="45" y2="80"/>
+        <line x1="0" y1="50" x2="45" y2="0"/><line x1="0" y1="50" x2="45" y2="40"/><line x1="0" y1="50" x2="45" y2="80"/>
+        <line x1="0" y1="90" x2="45" y2="0"/><line x1="0" y1="90" x2="45" y2="40"/><line x1="0" y1="90" x2="45" y2="80"/>
+        <line x1="45" y1="0" x2="90" y2="45"/><line x1="45" y1="40" x2="90" y2="45"/><line x1="45" y1="80" x2="90" y2="45"/></g>
+        <circle cx="0" cy="10" r="8" fill="#fff"/><circle cx="0" cy="50" r="8" fill="#fff"/><circle cx="0" cy="90" r="8" fill="#fff"/>
+        <circle cx="45" cy="0" r="8" fill="#aeeacc"/><circle cx="45" cy="40" r="8" fill="#aeeacc"/><circle cx="45" cy="80" r="8" fill="#aeeacc"/>
+        <circle cx="90" cy="45" r="9" fill="#7fd3aa"/></g>`,
+    props: [{ e: '🧠', l: 30, t: 8, s: 15, r: -8 }],
+    pose: 'rotate(0deg)',
+  },
+  chill: {
+    bg: 'linear-gradient(180deg, #cdeeff 0%, #e4f6ff 60%, #fff0c7 60%, #ffe7ad 100%)',
+    deco: `<circle cx="345" cy="150" r="0"/>
+      <path d="M0 122 q25 -10 50 0 t50 0 t50 0 t50 0 t50 0 t50 0 t50 0 t50 0 t50 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+      <g transform="translate(40 150)"><path d="M0 0 a40 40 0 0 1 80 0z" fill="#ffc6e0" stroke="#3f3d56" stroke-width="2.5"/>
+        <line x1="40" y1="0" x2="40" y2="50" stroke="#3f3d56" stroke-width="3"/></g>`,
+    props: [{ e: '🍹', l: 78, t: 60, s: 20, r: 8 }, { e: '☀️', l: 30, t: 4, s: 17, r: 0 }],
+    pose: 'rotate(-7deg) scaleX(-1)',
+  },
+};
+
 const AVATARS = ['🧑‍💻', '👩‍💻', '👨‍💻', '🐱', '🐶', '🐰'];
 const KEY_PROFILE = 'csgame_profile';
 const KEY_RESULTS = 'csgame_results';
@@ -465,23 +550,29 @@ function codeLines(call) {
 }
 
 // 코드 에디터 패널 위에 캐릭터(마스코트 또는 이모지)와 말풍선을 올린 그림
-function panelHTML({ emoji, line, call = 'study();', locked = false, image = '', mascot = false }) {
+// scene: 결과 유형별 배경·장식·소품·자세 (SCENES 참고)
+function panelHTML({ emoji, line, call = 'study();', locked = false, image = '', mascot = false, scene = null }) {
   let figure;
   if (image) figure = `<img class="cover" src="${esc(image)}" alt="">`;
-  else if (mascot) figure = `<img class="mascot" src="${MASCOT}" alt="안뇽이">${emoji ? `<span class="badge">${emoji}</span>` : ''}`;
+  else if (mascot) figure = `<img class="mascot" src="${MASCOT}" alt="안뇽이" style="${scene ? `--pose:${scene.pose}` : ''}">${emoji ? `<span class="badge">${emoji}</span>` : ''}`;
   else figure = `<span class="char">${emoji}</span>`;
+  const cls = ['code-panel', locked && 'locked', scene && 'scene', scene?.dark && 'dark'].filter(Boolean).join(' ');
+  const props = scene ? scene.props.map((p) =>
+    `<span class="prop" style="left:${p.l}%;top:${p.t}%;font-size:${p.s}cqh;--r:${p.r}deg">${p.e}</span>`).join('') : '';
   return `
-    <div class="code-panel ${locked ? 'locked' : ''}">
+    <div class="${cls}" ${scene ? `style="background:${scene.bg}"` : ''}>
       <pre aria-hidden="true">${codeLines(call)}</pre>
-      ${figure}
+      ${scene ? `<svg class="deco" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${scene.deco}</svg>` : ''}
+      ${figure}${props}
       ${line ? `<div class="speech">${esc(line)}</div>` : ''}
     </div>`;
 }
 
-function artHTML(key, locked = false) {
+// 결과 그림 (mini: 도감 카드용, 말풍선 없음)
+function artHTML(key, locked = false, mini = false) {
   const t = TYPES[key];
-  if (locked) return panelHTML({ emoji: '❓', line: '???', call: 'unlock();', locked: true });
-  return panelHTML({ mascot: true, emoji: t.emoji, line: t.line, call: t.code, image: t.image });
+  if (locked) return panelHTML({ emoji: '❓', line: mini ? '' : '???', call: 'unlock();', locked: true });
+  return panelHTML({ mascot: true, emoji: t.emoji, line: mini ? '' : t.line, call: t.code, image: t.image, scene: SCENES[key] });
 }
 
 /* ========================= 프로필 ========================= */
@@ -633,7 +724,7 @@ function openCollection() {
     const got = counts[k] > 0;
     return `
       <button class="rcard ${got ? '' : 'locked'}" data-type="${k}">
-        ${got ? panelHTML({ emoji: t.emoji, call: t.code }) : panelHTML({ emoji: '❓', call: 'unlock();', locked: true })}
+        ${artHTML(k, !got, true)}
         <div class="t">${got ? esc(t.name) : '???'}</div>
         <div class="c">${got ? `${counts[k]}회 획득` : '미획득 · 눌러서 힌트 보기'}</div>
       </button>`;
