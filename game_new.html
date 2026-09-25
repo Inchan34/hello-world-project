@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>컴공생 시뮬레이터</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f1ec;
+    --card: #ffffff;
+    --ink: #1f2330;
+    --muted: #6b7080;
+    --line: #e4e0d8;
+    --accent: #4f46e5;
+    --accent-ink: #ffffff;
+    --shadow: 0 10px 30px rgba(31, 35, 48, .10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans KR', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+  }
+  #app { width: 100%; max-width: 480px; padding: 24px 16px 48px; }
+  .screen { display: none; animation: fade .25s ease; }
+  .screen.active { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  h1 { font-size: 26px; font-weight: 900; letter-spacing: -0.5px; }
+  h2 { font-size: 20px; font-weight: 800; margin-bottom: 14px; }
+  .sub { color: var(--muted); font-size: 14px; margin-top: 6px; }
+  .card { background: var(--card); border-radius: 18px; padding: 20px; box-shadow: var(--shadow); margin-top: 18px; }
+
+  label { display: block; font-size: 13px; font-weight: 700; margin: 14px 0 6px; }
+  input, select {
+    width: 100%; padding: 12px 14px; font: inherit; font-size: 15px;
+    border: 1.5px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink);
+  }
+  input:focus, select:focus { outline: none; border-color: var(--accent); }
+  .avatars { display: flex; gap: 8px; flex-wrap: wrap; }
+  .avatars button {
+    font-size: 26px; width: 52px; height: 52px; border-radius: 14px;
+    border: 2px solid var(--line); background: #fff; cursor: pointer;
+  }
+  .avatars button.sel { border-color: var(--accent); background: #eef; }
+
+  .btn {
+    display: block; width: 100%; padding: 15px; margin-top: 12px;
+    font: inherit; font-size: 16px; font-weight: 700; border: none; border-radius: 14px;
+    background: var(--accent); color: var(--accent-ink); cursor: pointer; transition: transform .1s;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
+  .btn.small { padding: 10px; font-size: 14px; }
+  .error { color: #dc2626; font-size: 13px; margin-top: 8px; min-height: 18px; }
+
+  /* 홈 */
+  .profile { display: flex; align-items: center; gap: 14px; }
+  .profile .ava { font-size: 40px; width: 64px; height: 64px; border-radius: 18px; background: #eef; display: grid; place-items: center; }
+  .profile .name { font-size: 20px; font-weight: 800; }
+  .profile .meta { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .collect-bar { margin-top: 14px; font-size: 13px; color: var(--muted); }
+  .bar { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin-top: 6px; }
+  .bar > div { height: 100%; background: var(--accent); border-radius: 99px; transition: width .4s; }
+
+  /* 게임 */
+  .topbar { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--muted); }
+  .topbar button { background: none; border: none; color: var(--muted); font: inherit; cursor: pointer; }
+  .year-badge { display: inline-block; background: var(--ink); color: #fff; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 99px; margin-top: 18px; }
+  .scene-emoji { font-size: 56px; text-align: center; margin: 18px 0 6px; }
+  .question { font-size: 19px; font-weight: 800; line-height: 1.5; text-align: center; word-break: keep-all; }
+  .options { margin-top: 22px; display: grid; gap: 10px; }
+  .option {
+    text-align: left; padding: 16px; font: inherit; font-size: 15px; line-height: 1.45;
+    background: var(--card); border: 2px solid transparent; border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05); cursor: pointer; color: var(--ink); position: relative;
+    word-break: keep-all; transition: border-color .15s, transform .1s;
+  }
+  .option:hover { border-color: var(--accent); }
+  .option:active { transform: scale(.98); }
+  .option.hint { border-color: #f59e0b; background: #fffbeb; }
+  .option.hint::after {
+    content: '💡 추천'; position: absolute; top: -9px; right: 12px;
+    background: #f59e0b; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px;
+  }
+  .target-note { margin-top: 10px; font-size: 13px; text-align: center; color: #b45309; background: #fef3c7; padding: 8px; border-radius: 10px; }
+
+  /* 도감 */
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .rcard {
+    background: var(--card); border-radius: 16px; padding: 14px; text-align: center;
+    box-shadow: var(--shadow); cursor: pointer; border: none; font: inherit; color: var(--ink);
+    transition: transform .1s;
+  }
+  .rcard:active { transform: scale(.97); }
+  .rcard .thumb { height: 90px; border-radius: 12px; display: grid; place-items: center; font-size: 44px; }
+  .rcard.locked .thumb { background: #e5e5e5 !important; filter: grayscale(1); }
+  .rcard.locked .thumb span { opacity: .25; }
+  .rcard .t { font-weight: 800; font-size: 14px; margin-top: 10px; }
+  .rcard .c { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .history { margin-top: 8px; }
+  .history li { list-style: none; display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px; cursor: pointer; }
+  .history li:last-child { border-bottom: none; }
+  .history .d { color: var(--muted); font-size: 12px; }
+  .empty { color: var(--muted); font-size: 14px; text-align: center; padding: 16px 0; }
+  .row { display: flex; justify-content: space-between; align-items: center; }
+  .link { background: none; border: none; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; }
+
+  /* 팝업 */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(15, 17, 26, .55); display: none;
+    align-items: center; justify-content: center; padding: 16px; z-index: 10;
+  }
+  .overlay.open { display: flex; animation: fade .2s ease; }
+  .modal {
+    background: var(--card); width: 100%; max-width: 420px; max-height: 92vh; overflow-y: auto;
+    border-radius: 22px; padding: 22px; position: relative; animation: pop .3s cubic-bezier(.2,1.4,.4,1);
+  }
+  @keyframes pop { from { transform: scale(.85); opacity: 0; } to { transform: none; opacity: 1; } }
+  .close { position: absolute; top: 12px; right: 14px; background: none; border: none; font-size: 22px; cursor: pointer; color: var(--muted); }
+  .art {
+    height: 200px; border-radius: 16px; position: relative; overflow: hidden;
+    display: grid; place-items: center;
+  }
+  .art img { width: 100%; height: 100%; object-fit: cover; }
+  .art .big { font-size: 96px; position: relative; z-index: 1; filter: drop-shadow(0 6px 12px rgba(0,0,0,.2)); }
+  .art svg.deco { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .modal .who { text-align: center; color: var(--muted); font-size: 14px; margin-top: 16px; }
+  .modal .rtitle { text-align: center; font-size: 26px; font-weight: 900; margin-top: 4px; }
+  .modal .desc { font-size: 15px; line-height: 1.7; margin-top: 12px; word-break: keep-all; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 12px; }
+  .tags span { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 99px; background: #f1f1f4; }
+  .stats { margin-top: 16px; }
+  .stat { display: grid; grid-template-columns: 90px 1fr 26px; align-items: center; gap: 8px; font-size: 12px; margin-top: 6px; }
+  .stat .bar { margin: 0; }
+  .guide { margin-top: 16px; background: #f7f7fa; border-radius: 14px; padding: 14px; }
+  .guide h3 { font-size: 15px; margin-bottom: 8px; }
+  .guide ol { padding-left: 18px; font-size: 14px; line-height: 1.6; }
+  .guide li { margin-bottom: 6px; }
+  .guide .q { color: var(--muted); font-size: 12px; display: block; }
+  .guide .tip { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .saved { text-align: center; font-size: 12px; color: #16a34a; margin-top: 10px; }
+  .btn-row { display: flex; gap: 8px; }
+  .btn-row .btn { flex: 1; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- 1. 프로필 설정 -->
+  <section class="screen" id="s-profile">
+    <h1>👋 반가워요, 새내기!</h1>
+    <p class="sub">대학 생활을 시작하기 전에 프로필을 만들어 주세요.</p>
+    <div class="card">
+      <label for="p-name">이름</label>
+      <input id="p-name" maxlength="10" placeholder="예: 김코딩">
+
+      <label for="p-major">학과</label>
+      <select id="p-major">
+        <option value="컴퓨터공학과">컴퓨터공학과</option>
+        <option disabled>전자공학과 (준비 중)</option>
+        <option disabled>경영학과 (준비 중)</option>
+      </select>
+
+      <label for="p-id">학번</label>
+      <select id="p-id"></select>
+
+      <label>캐릭터</label>
+      <div class="avatars" id="p-avatars"></div>
+
+      <p class="error" id="p-error"></p>
+      <button class="btn" id="p-save">저장하고 시작하기</button>
+    </div>
+  </section>
+
+  <!-- 2. 홈 -->
+  <section class="screen" id="s-home">
+    <h1>💻 컴공생 시뮬레이터</h1>
+    <p class="sub">4년 동안의 선택이 당신을 어떤 컴공생으로 만들까요?</p>
+    <div class="card">
+      <div class="profile">
+        <div class="ava" id="h-ava"></div>
+        <div>
+          <div class="name" id="h-name"></div>
+          <div class="meta" id="h-meta"></div>
+        </div>
+      </div>
+      <div class="collect-bar">
+        <span id="h-collect"></span>
+        <div class="bar"><div id="h-collect-bar"></div></div>
+      </div>
+    </div>
+    <button class="btn" id="h-start">🎓 입학하기 (게임 시작)</button>
+    <button class="btn ghost" id="h-collection">📖 결과 도감</button>
+    <button class="btn ghost" id="h-edit">✏️ 프로필 수정</button>
+  </section>
+
+  <!-- 3. 게임 -->
+  <section class="screen" id="s-game">
+    <div class="topbar">
+      <button id="g-quit">← 그만두기</button>
+      <span id="g-count"></span>
+    </div>
+    <div class="bar"><div id="g-bar"></div></div>
+    <div id="g-target"></div>
+    <span class="year-badge" id="g-year"></span>
+    <div class="scene-emoji" id="g-emoji"></div>
+    <p class="question" id="g-question"></p>
+    <div class="options" id="g-options"></div>
+  </section>
+
+  <!-- 4. 결과 도감 -->
+  <section class="screen" id="s-collection">
+    <div class="topbar"><button id="c-back">← 홈으로</button></div>
+    <h1 style="margin-top:12px">📖 결과 도감</h1>
+    <p class="sub">카드를 누르면 그 결과가 나오는 방법을 알려드려요.</p>
+    <div class="grid card" style="background:none;box-shadow:none;padding:0" id="c-grid"></div>
+    <div class="card">
+      <div class="row">
+        <h2 style="margin:0">🕘 지난 결과 기록</h2>
+        <button class="link" id="c-clear">기록 삭제</button>
+      </div>
+      <ul class="history" id="c-history"></ul>
+    </div>
+  </section>
+</div>
+
+<!-- 결과 / 가이드 팝업 -->
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+/* =========================================================
+ *  데이터
+ *  - 결과 이미지를 직접 넣고 싶으면 image: 'images/debugger.png' 처럼 경로를 적으면 됩니다.
+ *    비워두면 이모지 일러스트가 자동으로 그려집니다.
+ * ========================================================= */
+const TYPES = {
+  debugger: {
+    name: '밤샘 디버거', emoji: '🦉', color: ['#6366f1', '#312e81'], image: '',
+    desc: '새벽 4시, 모두가 잠든 시간에 당신의 눈은 가장 빛납니다. 아무도 못 잡는 버그도 끝까지 추적해 잡아내는 끈기의 소유자. 팀에 한 명씩은 꼭 필요한 든든한 해결사예요.',
+    tags: ['#끈기', '#올나이트', '#printf장인'],
+  },
+  algo: {
+    name: '알고리즘 마스터', emoji: '🏆', color: ['#f59e0b', '#b45309'], image: '',
+    desc: '시간 복잡도를 보면 가슴이 뛰는 당신. 백준 티어가 곧 자존심이고, 코딩테스트는 두렵지 않습니다. 논리적이고 효율적인 사고로 어떤 문제든 최적해를 찾아내요.',
+    tags: ['#백준', '#O(logN)', '#코테프리패스'],
+  },
+  startup: {
+    name: '스타트업 CEO', emoji: '🚀', color: ['#ef4444', '#991b1b'], image: '',
+    desc: '코드는 수단일 뿐, 당신의 목표는 세상을 바꾸는 서비스! 아이디어를 빠르게 실행으로 옮기고 사람들을 이끄는 리더십이 있어요. 언젠가 당신의 앱을 모두가 쓰게 될지도?',
+    tags: ['#실행력', '#피치덱', '#리더십'],
+  },
+  design: {
+    name: '프론트엔드 장인', emoji: '🎨', color: ['#ec4899', '#9d174d'], image: '',
+    desc: '1px 어긋난 것도 참을 수 없는 섬세한 감각의 소유자. 사용자가 보는 화면을 아름답고 편리하게 만드는 데 진심입니다. 당신이 만든 페이지는 들어가는 순간 "와" 소리가 나요.',
+    tags: ['#픽셀퍼펙트', '#CSS마법사', '#UX'],
+  },
+  ai: {
+    name: 'AI 연구자', emoji: '🤖', color: ['#10b981', '#065f46'], image: '',
+    desc: '"왜?"라는 질문을 멈추지 않는 탐구가. 수학과 데이터 속에서 패턴을 찾고, 모델을 학습시키며 미래를 만들어 갑니다. 대학원 연구실이 당신을 기다리고 있을지도 몰라요.',
+    tags: ['#딥러닝', '#논문', '#GPU부족'],
+  },
+  chill: {
+    name: '자유로운 영혼', emoji: '🌴', color: ['#06b6d4', '#155e75'], image: '',
+    desc: '학점보다 추억, 과제보다 여행! 대학 생활을 누구보다 즐기는 당신. 여유로운 태도 덕분에 주변 사람들이 편안함을 느껴요. 마감 직전의 집중력만큼은 누구도 따라올 수 없죠.',
+    tags: ['#워라밸', '#낭만', '#벼락치기'],
+  },
+};
+const TYPE_ORDER = ['debugger', 'algo', 'startup', 'design', 'ai', 'chill'];
+
+// 각 선택지의 score: 해당 결과 유형에 더해지는 점수
+const QUESTIONS = [
+  { year: '1학년 봄', emoji: '🌸', q: '입학 OT에서 선배가 물었다.\n"{name}아, 대학에서 뭐 하고 싶어?"', options: [
+    { t: '"코딩테스트 1등 해보고 싶어요!"', score: { algo: 2 } },
+    { t: '"제 서비스를 직접 만들어 보고 싶어요."', score: { startup: 2 } },
+    { t: '"예쁜 웹사이트를 만들고 싶어요."', score: { design: 2 } },
+    { t: '"음… 일단 좀 놀고 싶어요 ㅎㅎ"', score: { chill: 2 } },
+  ]},
+  { year: '1학년 봄', emoji: '💥', q: '첫 C언어 과제에서\nSegmentation fault가 났다!', options: [
+    { t: '새벽 4시까지 printf를 찍어가며 끝까지 잡는다', score: { debugger: 2 } },
+    { t: '포인터와 메모리 구조부터 원리를 파고든다', score: { ai: 1, algo: 1 } },
+    { t: '잘하는 동기에게 물어서 빠르게 해결한다', score: { startup: 1, chill: 1 } },
+    { t: '내일의 내가 해결하겠지… 일단 잔다', score: { chill: 2 } },
+  ]},
+  { year: '1학년 가을', emoji: '🎪', q: '동아리 박람회!\n어디에 가입할까?', options: [
+    { t: '알고리즘 문제풀이 동아리', score: { algo: 2 } },
+    { t: '창업 동아리', score: { startup: 2 } },
+    { t: '머신러닝 스터디', score: { ai: 2 } },
+    { t: '밴드 동아리', score: { chill: 2 } },
+  ]},
+  { year: '2학년 봄', emoji: '👥', q: '조별 과제 시작.\n내가 맡을 역할은?', options: [
+    { t: '화면 UI 디자인과 프론트엔드', score: { design: 2 } },
+    { t: '아무도 못 잡는 버그 해결 담당', score: { debugger: 2 } },
+    { t: '기획과 발표', score: { startup: 2 } },
+    { t: '데이터 분석과 모델링', score: { ai: 2 } },
+  ]},
+  { year: '2학년 가을', emoji: '📚', q: '자료구조 시험 전날 밤.\n나는…', options: [
+    { t: '족보 대신 교재를 펴고 원리를 다시 이해한다', score: { ai: 1, algo: 1 } },
+    { t: '에너지 드링크 3캔, 오늘은 올나이트다', score: { debugger: 2 } },
+    { t: '게임 딱 한 판만… (3시간 경과)', score: { chill: 2 } },
+    { t: '백준 문제 풀면서 머리를 푼다', score: { algo: 2 } },
+  ]},
+  { year: '3학년 여름', emoji: '☀️', q: '기다리던 여름방학!\n무엇을 할까?', options: [
+    { t: '해커톤에 나가 48시간 동안 서비스를 만든다', score: { startup: 1, design: 1 } },
+    { t: '교수님 연구실 학부 연구생으로 들어간다', score: { ai: 2 } },
+    { t: '배낭 하나 메고 해외여행을 떠난다', score: { chill: 2 } },
+    { t: '나만의 포트폴리오 사이트를 만든다', score: { design: 2 } },
+  ]},
+  { year: '3학년 가을', emoji: '🧰', q: '내가 가장 사랑하는\n개발 도구는?', options: [
+    { t: '디버거와 로그 파일', score: { debugger: 2 } },
+    { t: 'Figma와 CSS', score: { design: 2 } },
+    { t: 'Jupyter Notebook', score: { ai: 2 } },
+    { t: '노션 기획서와 피치덱', score: { startup: 2 } },
+  ]},
+  { year: '4학년 봄', emoji: '🎓', q: '드디어 졸업 작품!\n주제는?', options: [
+    { t: '투자까지 받을 수 있는 실제 서비스', score: { startup: 2 } },
+    { t: '초고속 최적화 알고리즘 엔진', score: { algo: 2 } },
+    { t: '인터랙티브 웹 아트', score: { design: 2 } },
+    { t: '졸작…? 그게 언제 마감이더라?', score: { chill: 1, debugger: 1 } },
+  ]},
+  { year: '졸업식', emoji: '🔮', q: '10년 후의 나는\n어떤 모습일까?', options: [
+    { t: '장애가 나면 제일 먼저 불려가는 해결사', score: { debugger: 2 } },
+    { t: '세계 대회 수상 경력의 알고리즘 고수', score: { algo: 2 } },
+    { t: '유명 학회에 논문을 낸 연구자', score: { ai: 2 } },
+    { t: '제주도 바닷가 카페 사장님', score: { chill: 2 } },
+  ]},
+];
+
+const AVATARS = ['🧑‍💻', '👩‍💻', '👨‍💻', '🐱', '🐶', '🐰'];
+const KEY_PROFILE = 'csgame_profile';
+const KEY_RESULTS = 'csgame_results';
+
+/* ========================= 저장소 ========================= */
+const store = {
+  get(key, fallback) {
+    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+    catch { return fallback; }
+  },
+  set(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+  },
+  remove(key) { try { localStorage.removeItem(key); } catch {} },
+};
+
+let profile = store.get(KEY_PROFILE, null);
+let results = store.get(KEY_RESULTS, []);
+let game = null; // { index, scores, target }
+
+/* ========================= 공통 ========================= */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach((s) => s.classList.toggle('active', s.id === id));
+  window.scrollTo(0, 0);
+}
+
+function artHTML(key, locked = false) {
+  const t = TYPES[key];
+  if (t.image && !locked) return `<div class="art"><img src="${esc(t.image)}" alt="${esc(t.name)}"></div>`;
+  const [a, b] = locked ? ['#d4d4d8', '#71717a'] : t.color;
+  return `
+    <div class="art" style="background:linear-gradient(135deg, ${a}, ${b})">
+      <svg class="deco" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <circle cx="60" cy="40" r="50" fill="#fff" opacity=".10"/>
+        <circle cx="350" cy="170" r="70" fill="#fff" opacity=".10"/>
+        <circle cx="330" cy="40" r="6" fill="#fff" opacity=".5"/>
+        <circle cx="80" cy="160" r="4" fill="#fff" opacity=".5"/>
+        <path d="M300 90 l6 -14 l6 14 l14 6 l-14 6 l-6 14 l-6 -14 l-14 -6 z" fill="#fff" opacity=".6"/>
+        <path d="M90 90 l4 -9 l4 9 l9 4 l-9 4 l-4 9 l-4 -9 l-9 -4 z" fill="#fff" opacity=".5"/>
+        <text x="30" y="190" font-family="monospace" font-size="14" fill="#fff" opacity=".25">&lt;/&gt; 01101</text>
+      </svg>
+      <span class="big" style="${locked ? 'opacity:.35;filter:grayscale(1)' : ''}">${locked ? '❓' : t.emoji}</span>
+    </div>`;
+}
+
+/* ========================= 프로필 ========================= */
+let pickedAvatar = AVATARS[0];
+
+function openProfile() {
+  const sel = $('p-id');
+  sel.innerHTML = '';
+  for (let y = 26; y >= 19; y--) sel.insertAdjacentHTML('beforeend', `<option value="${y}학번">${y}학번</option>`);
+  $('p-name').value = profile?.name || '';
+  $('p-major').value = profile?.major || '컴퓨터공학과';
+  if (profile?.sid) sel.value = profile.sid;
+  pickedAvatar = profile?.avatar || AVATARS[0];
+  renderAvatars();
+  $('p-error').textContent = '';
+  show('s-profile');
+}
+
+function renderAvatars() {
+  $('p-avatars').innerHTML = AVATARS.map((a) =>
+    `<button type="button" class="${a === pickedAvatar ? 'sel' : ''}" data-a="${a}">${a}</button>`).join('');
+}
+
+$('p-avatars').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  pickedAvatar = b.dataset.a;
+  renderAvatars();
+});
+
+$('p-save').addEventListener('click', () => {
+  const name = $('p-name').value.trim();
+  if (!name) { $('p-error').textContent = '이름을 입력해 주세요.'; return; }
+  profile = { name, major: $('p-major').value, sid: $('p-id').value, avatar: pickedAvatar };
+  store.set(KEY_PROFILE, profile);
+  openHome();
+});
+
+/* ========================= 홈 ========================= */
+function collectedSet() { return new Set(results.map((r) => r.type)); }
+
+function openHome() {
+  $('h-ava').textContent = profile.avatar;
+  $('h-name').textContent = profile.name;
+  $('h-meta').textContent = `${profile.major} · ${profile.sid}`;
+  const n = collectedSet().size;
+  $('h-collect').textContent = `결과 도감 ${n} / ${TYPE_ORDER.length} 수집`;
+  $('h-collect-bar').style.width = `${(n / TYPE_ORDER.length) * 100}%`;
+  show('s-home');
+}
+
+$('h-start').addEventListener('click', () => startGame(null));
+$('h-collection').addEventListener('click', openCollection);
+$('h-edit').addEventListener('click', openProfile);
+
+/* ========================= 게임 ========================= */
+function startGame(target) {
+  closeModal();
+  game = { index: 0, scores: Object.fromEntries(TYPE_ORDER.map((k) => [k, 0])), target };
+  renderQuestion();
+  show('s-game');
+}
+
+// 목표 유형에 가장 점수가 높은 선택지 index (없으면 -1)
+function bestOptionFor(q, type) {
+  let best = -1, max = 0;
+  q.options.forEach((o, i) => { const s = o.score[type] || 0; if (s > max) { max = s; best = i; } });
+  return best;
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[game.index];
+  const total = QUESTIONS.length;
+  $('g-count').textContent = `${game.index + 1} / ${total}`;
+  $('g-bar').style.width = `${(game.index / total) * 100}%`;
+  $('g-year').textContent = q.year;
+  $('g-emoji').textContent = q.emoji;
+  $('g-question').innerHTML = esc(q.q.replace('{name}', profile.name)).replace(/\n/g, '<br>');
+  $('g-target').innerHTML = game.target
+    ? `<div class="target-note">🎯 목표: <b>${esc(TYPES[game.target].name)}</b> — 💡 표시된 선택지를 고르면 돼요</div>` : '';
+  const hint = game.target ? bestOptionFor(q, game.target) : -1;
+  $('g-options').innerHTML = q.options.map((o, i) =>
+    `<button class="option ${i === hint ? 'hint' : ''}" data-i="${i}">${esc(o.t)}</button>`).join('');
+}
+
+$('g-options').addEventListener('click', (e) => {
+  const b = e.target.closest('.option');
+  if (!b) return;
+  const opt = QUESTIONS[game.index].options[+b.dataset.i];
+  for (const [k, v] of Object.entries(opt.score)) game.scores[k] += v;
+  game.index++;
+  if (game.index < QUESTIONS.length) renderQuestion();
+  else finishGame();
+});
+
+$('g-quit').addEventListener('click', () => {
+  if (confirm('진행 중인 게임을 그만둘까요?')) openHome();
+});
+
+function finishGame() {
+  $('g-bar').style.width = '100%';
+  // 최고 점수 유형 (동점이면 TYPE_ORDER 순서 우선)
+  const type = TYPE_ORDER.reduce((best, k) => (game.scores[k] > game.scores[best] ? k : best), TYPE_ORDER[0]);
+  const isNew = !collectedSet().has(type);
+  const record = { type, name: profile.name, date: new Date().toISOString(), scores: game.scores };
+  results.unshift(record);
+  store.set(KEY_RESULTS, results);
+  showResult(record, isNew, true);
+}
+
+/* ========================= 결과 팝업 ========================= */
+function statsHTML(scores) {
+  const max = Math.max(1, ...Object.values(scores));
+  return `<div class="stats">${TYPE_ORDER.map((k) => `
+    <div class="stat">
+      <span>${TYPES[k].emoji} ${esc(TYPES[k].name)}</span>
+      <div class="bar"><div style="width:${(scores[k] / max) * 100}%;background:${TYPES[k].color[0]}"></div></div>
+      <span>${scores[k]}</span>
+    </div>`).join('')}</div>`;
+}
+
+function showResult(record, isNew, fromGame) {
+  const t = TYPES[record.type];
+  $('modal').innerHTML = `
+    <button class="close" data-close>✕</button>
+    ${artHTML(record.type)}
+    <p class="who">${esc(record.name)}님은…</p>
+    <p class="rtitle">${t.emoji} ${esc(t.name)}</p>
+    <div class="tags">${t.tags.map((x) => `<span>${esc(x)}</span>`).join('')}</div>
+    <p class="desc">${esc(t.desc)}</p>
+    ${record.scores ? statsHTML(record.scores) : ''}
+    ${fromGame ? `<p class="saved">✔ 결과가 도감에 저장되었어요${isNew ? ' · 🎉 새로운 결과 획득!' : ''}</p>` : ''}
+    <div class="btn-row">
+      <button class="btn ghost small" data-go="collection">📖 도감 보기</button>
+      <button class="btn small" data-go="retry">🔄 다시 하기</button>
+    </div>`;
+  openModal();
+}
+
+/* ========================= 도감 ========================= */
+function openCollection() {
+  const counts = {};
+  results.forEach((r) => { counts[r.type] = (counts[r.type] || 0) + 1; });
+
+  $('c-grid').innerHTML = TYPE_ORDER.map((k) => {
+    const t = TYPES[k];
+    const got = counts[k] > 0;
+    return `
+      <button class="rcard ${got ? '' : 'locked'}" data-type="${k}">
+        <div class="thumb" style="background:linear-gradient(135deg, ${t.color[0]}, ${t.color[1]})"><span>${got ? t.emoji : '❓'}</span></div>
+        <div class="t">${got ? esc(t.name) : '???'}</div>
+        <div class="c">${got ? `${counts[k]}회 획득` : '미획득 · 눌러서 힌트 보기'}</div>
+      </button>`;
+  }).join('');
+
+  $('c-history').innerHTML = results.length
+    ? results.map((r, i) => `
+        <li data-i="${i}">
+          <span>${TYPES[r.type].emoji} ${esc(TYPES[r.type].name)} <span class="d">· ${esc(r.name)}</span></span>
+          <span class="d">${new Date(r.date).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+        </li>`).join('')
+    : '<p class="empty">아직 기록이 없어요. 게임을 시작해 보세요!</p>';
+  show('s-collection');
+}
+
+$('c-back').addEventListener('click', openHome);
+$('c-grid').addEventListener('click', (e) => {
+  const c = e.target.closest('.rcard');
+  if (c) showGuide(c.dataset.type);
+});
+$('c-history').addEventListener('click', (e) => {
+  const li = e.target.closest('li');
+  if (li) showResult(results[+li.dataset.i], false, false);
+});
+$('c-clear').addEventListener('click', () => {
+  if (!results.length || !confirm('모든 결과 기록을 삭제할까요?')) return;
+  results = [];
+  store.set(KEY_RESULTS, results);
+  openCollection();
+});
+
+// 해당 결과가 나오게 하는 가이드라인
+function showGuide(type) {
+  const t = TYPES[type];
+  const got = collectedSet().has(type);
+  const steps = QUESTIONS.map((q, qi) => ({ q, i: bestOptionFor(q, type), qi }))
+    .filter((s) => s.i >= 0);
+  $('modal').innerHTML = `
+    <button class="close" data-close>✕</button>
+    ${artHTML(type, !got)}
+    <p class="rtitle" style="margin-top:14px">${got ? `${t.emoji} ${esc(t.name)}` : `??? (${esc(t.name)})`}</p>
+    <div class="tags">${t.tags.map((x) => `<span>${esc(x)}</span>`).join('')}</div>
+    ${got ? `<p class="desc">${esc(t.desc)}</p>` : '<p class="desc" style="text-align:center;color:var(--muted)">아직 획득하지 못한 결과예요.</p>'}
+    <div class="guide">
+      <h3>🧭 이 결과를 얻는 방법</h3>
+      <ol>${steps.map((s) => `
+        <li><span class="q">${esc(s.q.year)} · ${esc(s.q.q.replace('{name}', profile.name).split('\n').pop())}</span>
+        ${esc(s.q.options[s.i].t)}</li>`).join('')}
+      </ol>
+      <p class="tip">💡 위 선택지를 많이 고를수록 이 결과가 나올 확률이 높아져요. (${steps.length}개 중 과반이면 거의 확정!)</p>
+    </div>
+    <button class="btn" data-target="${type}">🎯 이 결과를 목표로 도전하기</button>`;
+  openModal();
+}
+
+/* ========================= 모달 공통 ========================= */
+function openModal() { $('overlay').classList.add('open'); $('modal').scrollTop = 0; }
+function closeModal() { $('overlay').classList.remove('open'); }
+
+$('overlay').addEventListener('click', (e) => {
+  if (e.target === $('overlay') || e.target.closest('[data-close]')) {
+    closeModal();
+    if ($('s-game').classList.contains('active')) openHome();
+    return;
+  }
+  const go = e.target.closest('[data-go]');
+  if (go) {
+    closeModal();
+    go.dataset.go === 'retry' ? startGame(null) : openCollection();
+    return;
+  }
+  const tgt = e.target.closest('[data-target]');
+  if (tgt) startGame(tgt.dataset.target);
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && $('overlay').classList.contains('open')) closeModal();
+});
+
+/* ========================= 시작 ========================= */
+profile ? openHome() : openProfile();
+</script>
+</body>
+</html>
