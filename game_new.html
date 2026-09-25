@@ -403,61 +403,215 @@ const TYPES = {
 };
 const TYPE_ORDER = ['debugger', 'algo', 'startup', 'design', 'ai', 'chill'];
 
+// 질문 풀: 게임마다 fixed/always 질문 + 나머지에서 랜덤으로 뽑아 order 순서(시간순)로 진행
+// q가 배열이면 그중 하나가 랜덤으로 나옴 · 선택지는 매번 OPTIONS_PER_Q개만 섞어서 보여줌
 // 각 선택지의 score: 해당 결과 유형에 더해지는 점수
+const QUESTIONS_PER_GAME = 10;
+const OPTIONS_PER_Q = 4;
 const QUESTIONS = [
-  { year: '1학년 봄', emoji: '🌸', q: '입학 OT에서 선배가 물었다.\n"{name}아, 대학에서 뭐 하고 싶어?"', options: [
+  { id: 'ot', order: 1, fixed: true, year: '1학년 봄', emoji: '🌸', q: [
+      '입학 OT에서 선배가 물었다.\n"{name}아, 대학에서 뭐 하고 싶어?"',
+      '새내기 OT 자기소개 시간!\n"저는 대학에서…"',
+    ], options: [
     { t: '"코딩테스트 1등 해보고 싶어요!"', score: { algo: 2 } },
     { t: '"제 서비스를 직접 만들어 보고 싶어요."', score: { startup: 2 } },
     { t: '"예쁜 웹사이트를 만들고 싶어요."', score: { design: 2 } },
     { t: '"음… 일단 좀 놀고 싶어요 ㅎㅎ"', score: { chill: 2 } },
+    { t: '"AI로 세상을 바꿔보고 싶어요!"', score: { ai: 2 } },
+    { t: '"버그 없는 코드를 짜는 게 꿈이에요."', score: { debugger: 2 } },
   ]},
-  { year: '1학년 봄', emoji: '💥', q: '첫 C언어 과제에서\nSegmentation fault가 났다!', options: [
+  { id: 'sugang', order: 2, year: '1학년 봄', emoji: '🖱️', q: [
+      '수강신청 날!\n서버가 터지기 직전이다.',
+      '수강신청 1분 전.\n손이 떨린다…',
+    ], options: [
+    { t: '서버 시간을 재서 0.1초 타이밍을 계산한다', score: { algo: 2 } },
+    { t: '개발자 도구를 열고 서버가 왜 느린지 본다', score: { debugger: 2 } },
+    { t: '"수강신청 도우미 앱 만들면 대박이겠다"', score: { startup: 2 } },
+    { t: '시간표 색깔 꾸미기가 더 중요하다', score: { design: 2 } },
+    { t: '무조건 공강 많은 시간표로!', score: { chill: 2 } },
+    { t: '인공지능 개론부터 담는다', score: { ai: 2 } },
+  ]},
+  { id: 'segfault', order: 3, year: '1학년 봄', emoji: '💥', q: [
+      '첫 C언어 과제에서\nSegmentation fault가 났다!',
+      '과제 마감 3시간 전,\n코드가 컴파일조차 안 된다!',
+    ], options: [
     { t: '새벽 4시까지 printf를 찍어가며 끝까지 잡는다', score: { debugger: 2 } },
     { t: '포인터와 메모리 구조부터 원리를 파고든다', score: { ai: 1, algo: 1 } },
     { t: '잘하는 동기에게 물어서 빠르게 해결한다', score: { startup: 1, chill: 1 } },
     { t: '내일의 내가 해결하겠지… 일단 잔다', score: { chill: 2 } },
+    { t: '에러 메시지를 AI에게 물어본다', score: { ai: 2 } },
+    { t: '코드 들여쓰기부터 예쁘게 정리한다', score: { design: 2 } },
   ]},
-  { year: '1학년 가을', emoji: '🎪', q: '동아리 박람회!\n어디에 가입할까?', options: [
+  { id: 'babyak', order: 4, always: true, year: '1학년 봄', emoji: '🍚', q: [
+      '과 선배가 밥약을 걸어왔다!\n"{name}아, 밥 한번 먹자~"',
+      '선배가 밥을 사준대!\n학식 말고 맛집으로 간다.',
+    ], options: [
+    { t: '"코딩테스트 어떻게 준비하셨어요?"', score: { algo: 2 } },
+    { t: '"창업 동아리 대표님 좀 소개해 주세요!"', score: { startup: 2 } },
+    { t: '"선배 포트폴리오 사이트 구경해도 돼요?"', score: { design: 2 } },
+    { t: '"연구실 학부 인턴은 어떻게 들어가요?"', score: { ai: 2 } },
+    { t: '"사실… 제 과제 버그 좀 봐주실 수 있나요?"', score: { debugger: 2 } },
+    { t: '메뉴판만 보며 "여기 진짜 맛집이네요!"', score: { chill: 2 } },
+  ]},
+  { id: 'mt', order: 5, year: '1학년 봄', emoji: '🏕️', q: [
+      '첫 과 MT!\n밤이 깊어간다.',
+    ], options: [
+    { t: '마피아 게임 사회를 보며 분위기를 이끈다', score: { startup: 1, chill: 1 } },
+    { t: '노트북을 꺼내 과제를 마저 한다', score: { debugger: 2 } },
+    { t: '보드게임 필승 전략을 계산한다', score: { algo: 2 } },
+    { t: '별 사진 찍으며 감성 충전', score: { design: 1, chill: 1 } },
+    { t: '다들 자는 사이 조용히 논문을 읽는다', score: { ai: 2 } },
+    { t: '누구보다 신나게 논다', score: { chill: 2 } },
+  ]},
+  { id: 'club', order: 6, year: '1학년 가을', emoji: '🎪', q: [
+      '동아리 박람회!\n어디에 가입할까?',
+    ], options: [
     { t: '알고리즘 문제풀이 동아리', score: { algo: 2 } },
     { t: '창업 동아리', score: { startup: 2 } },
     { t: '머신러닝 스터디', score: { ai: 2 } },
     { t: '밴드 동아리', score: { chill: 2 } },
+    { t: 'UI/UX 디자인 소모임', score: { design: 2 } },
+    { t: '해킹·보안 동아리', score: { debugger: 2 } },
   ]},
-  { year: '2학년 봄', emoji: '👥', q: '조별 과제 시작.\n내가 맡을 역할은?', options: [
+  { id: 'festival', order: 7, always: true, year: '1학년 가을', emoji: '🎡', q: [
+      '기다리던 대학 축제!\n나는 어디에 있을까?',
+      '축제 주간이다!\n우리 과도 부스를 연대.',
+    ], options: [
+    { t: '부스 운영 총괄! 매출 1등을 노린다', score: { startup: 2 } },
+    { t: '포스터와 부스 꾸미기를 맡는다', score: { design: 2 } },
+    { t: '수익이 최대가 되는 가격표를 계산한다', score: { algo: 2 } },
+    { t: '연예인 공연 맨 앞자리를 사수한다', score: { chill: 2 } },
+    { t: '부스 주문 웹페이지를 뚝딱 만든다', score: { design: 1, startup: 1 } },
+    { t: '공연 음향 장비 고장을 고치러 달려간다', score: { debugger: 2 } },
+    { t: '줄 길이로 인기 부스를 예측하는 모델을 만든다', score: { ai: 2 } },
+  ]},
+  { id: 'midterm', order: 8, year: '1학년 가을', emoji: '📝', q: [
+      '첫 중간고사.\n시험 범위가 너무 많다!',
+    ], options: [
+    { t: '기출 패턴을 분석해 나올 문제를 예측한다', score: { ai: 2 } },
+    { t: '개념 정리 노트를 예쁘게 만든다', score: { design: 2 } },
+    { t: '스터디를 만들어 사람을 모은다', score: { startup: 2 } },
+    { t: '전날 밤샘으로 한 번에 끝낸다', score: { debugger: 2 } },
+    { t: '연습문제를 전부 풀어본다', score: { algo: 2 } },
+    { t: '망했다… 그래도 축제는 즐겼으니까', score: { chill: 2 } },
+  ]},
+  { id: 'team', order: 10, year: '2학년 봄', emoji: '👥', q: [
+      '조별 과제 시작.\n내가 맡을 역할은?',
+    ], options: [
     { t: '화면 UI 디자인과 프론트엔드', score: { design: 2 } },
     { t: '아무도 못 잡는 버그 해결 담당', score: { debugger: 2 } },
     { t: '기획과 발표', score: { startup: 2 } },
     { t: '데이터 분석과 모델링', score: { ai: 2 } },
+    { t: '핵심 로직 설계와 최적화', score: { algo: 2 } },
+    { t: '분위기 메이커 겸 간식 담당', score: { chill: 2 } },
   ]},
-  { year: '2학년 가을', emoji: '📚', q: '자료구조 시험 전날 밤.\n나는…', options: [
+  { id: 'ghost', order: 11, year: '2학년 봄', emoji: '👻', q: [
+      '조원 한 명이 잠수를 탔다…\n마감은 다음 주다.',
+    ], options: [
+    { t: '그 사람 몫까지 밤새 코드를 짠다', score: { debugger: 2 } },
+    { t: '역할을 다시 나누고 일정을 새로 짠다', score: { startup: 2 } },
+    { t: '기여도를 공정하게 계산하는 방법을 제안한다', score: { algo: 1, ai: 1 } },
+    { t: '어차피 인생은 팀플… 웃어 넘긴다', score: { chill: 2 } },
+    { t: '화면만큼은 완벽하게 만들어 둔다', score: { design: 2 } },
+  ]},
+  { id: 'ds', order: 12, year: '2학년 가을', emoji: '📚', q: [
+      '자료구조 시험 전날 밤.\n나는…',
+    ], options: [
     { t: '족보 대신 교재를 펴고 원리를 다시 이해한다', score: { ai: 1, algo: 1 } },
     { t: '에너지 드링크 3캔, 오늘은 올나이트다', score: { debugger: 2 } },
     { t: '게임 딱 한 판만… (3시간 경과)', score: { chill: 2 } },
     { t: '백준 문제 풀면서 머리를 푼다', score: { algo: 2 } },
+    { t: '트리 구조를 그림으로 그려가며 외운다', score: { design: 2 } },
+    { t: '같이 공부할 스터디원을 모집한다', score: { startup: 2 } },
   ]},
-  { year: '3학년 여름', emoji: '☀️', q: '기다리던 여름방학!\n무엇을 할까?', options: [
+  { id: 'hackathon', order: 13, year: '2학년 겨울', emoji: '⏱️', q: [
+      '교내 해커톤 출전!\n48시간 동안 내 역할은?',
+    ], options: [
+    { t: '아이디어 피칭과 발표', score: { startup: 2 } },
+    { t: '밤새 기능 구현과 버그 잡기', score: { debugger: 2 } },
+    { t: '발표 화면과 UI 담당', score: { design: 2 } },
+    { t: 'AI 기능을 붙여 심사위원을 놀라게 한다', score: { ai: 2 } },
+    { t: '핵심 알고리즘을 최적화한다', score: { algo: 2 } },
+    { t: '간식 사 오고 응원하기', score: { chill: 2 } },
+  ]},
+  { id: 'exchange', order: 20, year: '3학년 봄', emoji: '✈️', q: [
+      '교환학생 모집 공고가 떴다!\n어디로 갈까?',
+    ], options: [
+    { t: '실리콘밸리 근처 학교에서 창업 문화를 배운다', score: { startup: 2 } },
+    { t: '유명 AI 연구실이 있는 학교', score: { ai: 2 } },
+    { t: '여행하기 좋은 유럽 학교', score: { chill: 2 } },
+    { t: '디자인 명문 학교에서 UX 수업 듣기', score: { design: 2 } },
+    { t: '안 간다. 남아서 ICPC를 준비한다', score: { algo: 2 } },
+  ]},
+  { id: 'summer', order: 21, year: '3학년 여름', emoji: '☀️', q: [
+      '기다리던 여름방학!\n무엇을 할까?',
+    ], options: [
     { t: '해커톤에 나가 48시간 동안 서비스를 만든다', score: { startup: 1, design: 1 } },
     { t: '교수님 연구실 학부 연구생으로 들어간다', score: { ai: 2 } },
     { t: '배낭 하나 메고 해외여행을 떠난다', score: { chill: 2 } },
     { t: '나만의 포트폴리오 사이트를 만든다', score: { design: 2 } },
+    { t: '코딩테스트 캠프에 참가한다', score: { algo: 2 } },
+    { t: '오픈소스 프로젝트의 버그를 고쳐 기여한다', score: { debugger: 2 } },
   ]},
-  { year: '3학년 가을', emoji: '🧰', q: '내가 가장 사랑하는\n개발 도구는?', options: [
+  { id: 'tool', order: 22, year: '3학년 가을', emoji: '🧰', q: [
+      '내가 가장 사랑하는\n개발 도구는?',
+    ], options: [
     { t: '디버거와 로그 파일', score: { debugger: 2 } },
     { t: 'Figma와 CSS', score: { design: 2 } },
     { t: 'Jupyter Notebook', score: { ai: 2 } },
     { t: '노션 기획서와 피치덱', score: { startup: 2 } },
+    { t: '백준과 알고리즘 오답노트', score: { algo: 2 } },
+    { t: '침대와 넷플릭스…?', score: { chill: 2 } },
   ]},
-  { year: '4학년 봄', emoji: '🎓', q: '드디어 졸업 작품!\n주제는?', options: [
+  { id: 'interview', order: 23, year: '3학년 겨울', emoji: '💼', q: [
+      '인턴 면접 질문:\n"본인의 강점은 무엇인가요?"',
+    ], options: [
+    { t: '"어떤 버그든 끝까지 잡습니다."', score: { debugger: 2 } },
+    { t: '"시간 복잡도 계산은 자신 있습니다."', score: { algo: 2 } },
+    { t: '"사용자 경험을 가장 먼저 생각합니다."', score: { design: 2 } },
+    { t: '"사업 아이템이 이미 세 개 있습니다."', score: { startup: 2 } },
+    { t: '"논문 읽는 게 취미입니다."', score: { ai: 2 } },
+    { t: '"어디서든 긍정 에너지를 뿜습니다!"', score: { chill: 2 } },
+  ]},
+  { id: 'capstone', order: 30, year: '4학년 봄', emoji: '🎓', q: [
+      '드디어 졸업 작품!\n주제는?',
+    ], options: [
     { t: '투자까지 받을 수 있는 실제 서비스', score: { startup: 2 } },
     { t: '초고속 최적화 알고리즘 엔진', score: { algo: 2 } },
     { t: '인터랙티브 웹 아트', score: { design: 2 } },
     { t: '졸작…? 그게 언제 마감이더라?', score: { chill: 1, debugger: 1 } },
+    { t: '논문으로 낼 수 있는 AI 모델', score: { ai: 2 } },
+    { t: '버그 자동 탐지 도구', score: { debugger: 2 } },
   ]},
-  { year: '졸업식', emoji: '🔮', q: '10년 후의 나는\n어떤 모습일까?', options: [
+  { id: 'career', order: 31, year: '4학년 가을', emoji: '🧭', q: [
+      '졸업을 앞두고\n진로를 고민한다.',
+    ], options: [
+    { t: '장애 대응팀이 있는 대기업 인프라 직무', score: { debugger: 2 } },
+    { t: '대학원 진학', score: { ai: 2 } },
+    { t: '창업 지원금 신청서를 쓴다', score: { startup: 2 } },
+    { t: '감각을 살려 프론트엔드 개발자로', score: { design: 2 } },
+    { t: '알고리즘 대회 경력으로 빅테크 도전', score: { algo: 2 } },
+    { t: '일단 1년 세계 일주부터', score: { chill: 2 } },
+  ]},
+  { id: 'photo', order: 32, year: '4학년 가을', emoji: '📸', q: [
+      '졸업사진 촬영 날!\n컨셉은?',
+    ], options: [
+    { t: '노트북과 에너지 드링크를 든 밤샘 컨셉', score: { debugger: 2 } },
+    { t: '트로피를 들고 찍는다', score: { algo: 2 } },
+    { t: '정장 입고 CEO 포즈', score: { startup: 2 } },
+    { t: '직접 디자인한 소품으로 꾸민다', score: { design: 2 } },
+    { t: '가운 입고 논문을 든 연구자 컨셉', score: { ai: 2 } },
+    { t: '바다 배경으로 자유롭게', score: { chill: 2 } },
+  ]},
+  { id: 'future', order: 99, fixed: true, year: '졸업식', emoji: '🔮', q: [
+      '10년 후의 나는\n어떤 모습일까?',
+    ], options: [
     { t: '장애가 나면 제일 먼저 불려가는 해결사', score: { debugger: 2 } },
     { t: '세계 대회 수상 경력의 알고리즘 고수', score: { algo: 2 } },
     { t: '유명 학회에 논문을 낸 연구자', score: { ai: 2 } },
     { t: '제주도 바닷가 카페 사장님', score: { chill: 2 } },
+    { t: '실리콘밸리 스타트업 대표', score: { startup: 2 } },
+    { t: '모두가 쓰는 앱을 디자인한 개발자', score: { design: 2 } },
   ]},
 ];
 
@@ -717,9 +871,31 @@ $('h-collection').addEventListener('click', openCollection);
 $('h-edit').addEventListener('click', openProfile);
 
 /* ========================= 게임 ========================= */
+const shuffle = (arr) => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+};
+const pick = (v) => (Array.isArray(v) ? v[Math.floor(Math.random() * v.length)] : v);
+
+// 이번 판에 나올 질문과 선택지를 랜덤으로 구성
+function buildRound(target) {
+  const must = QUESTIONS.filter((q) => q.fixed || q.always);
+  const rest = shuffle(QUESTIONS.filter((q) => !q.fixed && !q.always)).slice(0, Math.max(0, QUESTIONS_PER_GAME - must.length));
+  return [...must, ...rest]
+    .sort((a, b) => a.order - b.order)
+    .map((q) => {
+      let opts = shuffle(q.options).slice(0, OPTIONS_PER_Q);
+      // 목표 도전 중이면 목표 유형에 가장 좋은 선택지는 꼭 포함
+      const best = target ? q.options[bestOptionFor(q, target)] : null;
+      if (best && !opts.includes(best)) opts = shuffle([best, ...opts.slice(1)]);
+      return { ...q, q: pick(q.q), options: opts };
+    });
+}
+
 function startGame(target) {
   closeModal();
-  game = { index: 0, scores: Object.fromEntries(TYPE_ORDER.map((k) => [k, 0])), target };
+  game = { index: 0, scores: Object.fromEntries(TYPE_ORDER.map((k) => [k, 0])), target, questions: buildRound(target) };
   renderQuestion();
   show('s-game');
 }
@@ -732,8 +908,8 @@ function bestOptionFor(q, type) {
 }
 
 function renderQuestion() {
-  const q = QUESTIONS[game.index];
-  const total = QUESTIONS.length;
+  const q = game.questions[game.index];
+  const total = game.questions.length;
   $('g-count').textContent = `${game.index + 1} / ${total}`;
   $('g-bar').style.width = `${(game.index / total) * 100}%`;
   $('g-year').textContent = q.year;
@@ -749,10 +925,10 @@ function renderQuestion() {
 $('g-options').addEventListener('click', (e) => {
   const b = e.target.closest('.option');
   if (!b) return;
-  const opt = QUESTIONS[game.index].options[+b.dataset.i];
+  const opt = game.questions[game.index].options[+b.dataset.i];
   for (const [k, v] of Object.entries(opt.score)) game.scores[k] += v;
   game.index++;
-  if (game.index < QUESTIONS.length) renderQuestion();
+  if (game.index < game.questions.length) renderQuestion();
   else finishGame();
 });
 
@@ -762,8 +938,10 @@ $('g-quit').addEventListener('click', () => {
 
 function finishGame() {
   $('g-bar').style.width = '100%';
-  // 최고 점수 유형 (동점이면 TYPE_ORDER 순서 우선)
-  const type = TYPE_ORDER.reduce((best, k) => (game.scores[k] > game.scores[best] ? k : best), TYPE_ORDER[0]);
+  // 최고 점수 유형 (동점이면 그중 랜덤, 목표 도전 중이면 목표 우선)
+  const max = Math.max(...Object.values(game.scores));
+  const tops = TYPE_ORDER.filter((k) => game.scores[k] === max);
+  const type = tops.includes(game.target) ? game.target : pick(tops);
   const isNew = !collectedSet().has(type);
   const record = { type, name: profile.name, date: new Date().toISOString(), scores: game.scores };
   results.unshift(record);
@@ -860,10 +1038,10 @@ function showGuide(type) {
     <div class="guide">
       <h3>🧭 이 결과를 얻는 방법</h3>
       <ol>${steps.map((s) => `
-        <li><span class="q">${esc(s.q.year)} · ${esc(s.q.q.replace('{name}', profile.name).split('\n').pop())}</span>
+        <li><span class="q">${esc(s.q.year)} · ${esc(pick(s.q.q).replace('{name}', profile.name).split('\n').pop())}${s.q.fixed || s.q.always ? ' · 매번 등장' : ''}</span>
         ${esc(s.q.options[s.i].t)}</li>`).join('')}
       </ol>
-      <p class="tip">💡 위 선택지를 많이 고를수록 이 결과가 나올 확률이 높아져요. (${steps.length}개 중 과반이면 거의 확정!)</p>
+      <p class="tip">💡 게임마다 질문 ${QUESTIONS_PER_GAME}개가 랜덤으로 나오고 선택지도 섞여요. 나온 질문에서 위 선택지를 많이 고를수록 이 결과가 나올 확률이 높아져요. '목표로 도전하기'를 누르면 추천 선택지가 꼭 포함돼요!</p>
     </div>
     <button class="btn" data-target="${type}">🎯 이 결과를 목표로 도전하기</button>`;
   openModal();
