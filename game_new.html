@@ -262,6 +262,8 @@
   .guide li::marker { color: var(--kw); font-family: 'JetBrains Mono', monospace; font-weight: 700; }
   .guide .q { color: var(--kw); font-size: 12px; display: block; font-family: 'JetBrains Mono', 'Noto Sans KR', monospace; }
   .guide .tip { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .guide.action .k { color: var(--kw); font-size: 12px; font-weight: 700; display: block; font-family: 'Jua', sans-serif; }
+  .guide.action a { color: inherit; text-decoration: underline; word-break: break-all; }
   .saved { text-align: center; font-size: 13px; margin-top: 12px; font-weight: 700; color: #3f9c73; }
   .btn-row { display: flex; gap: 10px; }
   .btn-row .btn { flex: 1; }
@@ -369,36 +371,72 @@ const TYPES = {
     desc: '새벽 4시, 모두가 잠든 시간에 당신의 눈은 가장 빛납니다. 아무도 못 잡는 버그도 끝까지 추적해 잡아내는 끈기의 소유자. 팀에 한 명씩은 꼭 필요한 든든한 해결사예요.',
     tags: ['#끈기', '#올나이트', '#printf장인'],
     line: '버그\n잡았다!', code: 'fix(segfault);',
+    action: [
+      { k: '프로젝트', t: '깃허브에서 관심 있는 오픈소스의 "good first issue"를 찾아 실제로 버그를 고치고 PR을 올려보세요. 남의 코드에서 원인을 추적하는 경험이 최고의 훈련입니다.' },
+      { k: '학습법', t: '내가 만든 프로그램에 일부러 예외 상황을 넣고, gdb·Chrome DevTools 같은 디버거로 스택을 한 줄씩 추적하는 연습을 반복하세요.' },
+      { k: '인하대 연계', t: 'LINC 3.0 사업단의 현장실습 프로그램으로 실제 기업 시스템의 장애 대응·유지보수 업무를 경험해 보세요.', link: 'http://inhalinc.inkoreahost.com/' },
+      { k: '인하대 연계', t: '정보통신처가 운영하는 사이버보안 진단의 날 등 교내 보안 점검 활동에 참여해 시스템 취약점을 찾는 감각을 길러 보세요.', link: 'https://cic.inha.ac.kr/' },
+    ],
   },
   algo: {
     name: '알고리즘 마스터', emoji: '🏆', color: ['#ffe08f', '#f5c451'], image: 'images/result_algo_new.jpg',
     desc: '시간 복잡도를 보면 가슴이 뛰는 당신. 백준 티어가 곧 자존심이고, 코딩테스트는 두렵지 않습니다. 논리적이고 효율적인 사고로 어떤 문제든 최적해를 찾아내요.',
     tags: ['#백준', '#O(logN)', '#코테프리패스'],
     line: 'O(log n)\n가능?', code: 'solve(n, dp);',
+    action: [
+      { k: '프로젝트', t: '백준·프로그래머스에서 지금 내 실력보다 한 단계 위 난이도를 매일 1문제씩 꾸준히 풀고, 틀린 문제는 오답노트로 남겨보세요.' },
+      { k: '학습법', t: '학기마다 목표 티어를 정하고 스터디를 꾸려, 같은 문제를 각자 풀고 서로 코드 리뷰를 해보세요.' },
+      { k: '인하대 연계', t: '인하대 학생들이 직접 문제를 출제하고 운영하는 교내 프로그래밍 경진대회 IUPC(Inha University Programming Contest)에 참가해 실전 감각을 길러보세요.', link: 'https://www.acmicpc.net/contest/view/779' },
+      { k: '인하대 연계', t: 'SW중심대학사업단이 주관하는 SW중심대학 공동해커톤에 도전해보세요. 인하대 학생들이 실제로 대상·최우수상을 수상한 이력이 있는 대회예요.', link: 'https://swuniv.inha.ac.kr/' },
+    ],
   },
   startup: {
     name: '스타트업 CEO', emoji: '🚀', color: ['#ffb8b8', '#f28b8b'], image: 'images/result_startup_new.jpg',
     desc: '코드는 수단일 뿐, 당신의 목표는 세상을 바꾸는 서비스! 아이디어를 빠르게 실행으로 옮기고 사람들을 이끄는 리더십이 있어요. 언젠가 당신의 앱을 모두가 쓰게 될지도?',
     tags: ['#실행력', '#피치덱', '#리더십'],
     line: '투자\n받자!', code: 'launch(mvp);',
+    action: [
+      { k: '프로젝트', t: '주변의 사소한 불편함 하나를 골라 2주 안에 MVP(최소기능제품)를 만들고, 실제 사용자 5명에게 피드백을 받아보세요.' },
+      { k: '학습법', t: '린 캔버스(비즈니스 모델) 작성법을 익히고, 아이디어를 검증하는 고객 인터뷰 스크립트를 직접 만들어 실습해보세요.' },
+      { k: '인하대 연계', t: '인하대 창업지원단의 학생 예비창업공간 "꿈터"에 지원해 실제 창업 공간과 멘토링을 지원받아보세요.', link: 'https://startup.inha.ac.kr/' },
+      { k: '인하대 연계', t: '창업지원단의 아랩 액셀러레이팅 프로그램이나 Lab\'s Start up 프로그램에 지원해 사업계획서 작성부터 투자 유치까지 훈련해보세요.', link: 'https://startup.inha.ac.kr/' },
+    ],
   },
   design: {
     name: '프론트엔드 장인', emoji: '🎨', color: ['#ffc6e0', '#f59cc4'], image: 'images/result_design_new.jpg',
     desc: '1px 어긋난 것도 참을 수 없는 섬세한 감각의 소유자. 사용자가 보는 화면을 아름답고 편리하게 만드는 데 진심입니다. 당신이 만든 페이지는 들어가는 순간 "와" 소리가 나요.',
     tags: ['#픽셀퍼펙트', '#CSS마법사', '#UX'],
     line: '1px\n틀렸어!', code: 'align(center);',
+    action: [
+      { k: '프로젝트', t: '이미 있는 서비스 하나를 골라 UI만 새로 디자인하고 직접 코드로 구현하는 "리디자인 챌린지"를 해보세요.' },
+      { k: '학습법', t: 'Figma로 와이어프레임부터 목업까지 만들고, 그 목업을 픽셀 단위까지 맞춰 HTML/CSS로 퍼블리싱하는 연습을 반복하세요.' },
+      { k: '인하대 연계', t: '인하대에서 열리는 기업문제해결형 UX/UI 설계 디자인 경진대회(해커톤)에 참가해 실제 기업 과제로 UX/UI 실무를 경험해보세요.' },
+      { k: '인하대 연계', t: 'GDG on Campus Inha University 커뮤니티에 참여해 웹·프론트엔드 스터디와 해커톤을 함께해보세요.', link: 'https://gdg.community.dev/gdg-on-campus-inha-university-incheon-south-korea/' },
+    ],
   },
   ai: {
     name: 'AI 연구자', emoji: '🤖', color: ['#aeeacc', '#7fd3aa'], image: 'images/result_ai_new.jpg',
     desc: '"왜?"라는 질문을 멈추지 않는 탐구가. 수학과 데이터 속에서 패턴을 찾고, 모델을 학습시키며 미래를 만들어 갑니다. 대학원 연구실이 당신을 기다리고 있을지도 몰라요.',
     tags: ['#딥러닝', '#논문', '#GPU부족'],
     line: 'loss가\n줄었다!', code: 'model.train();',
+    action: [
+      { k: '프로젝트', t: '캐글(Kaggle) 대회를 하나 골라 데이터 전처리부터 모델링, 리더보드 제출까지 전체 파이프라인을 직접 경험해보세요.' },
+      { k: '학습법', t: '논문 하나를 정해 매주 핵심 아이디어를 요약하고 직접 코드로 재현해보는 "논문 재현" 스터디를 꾸려보세요.' },
+      { k: '인하대 연계', t: '인공지능융합연구센터(AIX) 소속 연구실에 학부생 인턴으로 지원해 실제 연구 프로젝트에 참여해보세요.', link: 'https://aix.inha.ac.kr/' },
+      { k: '인하대 연계', t: 'LINC 3.0 사업단의 다학년연구프로젝트(VIP)에 참여해 교수님·선후배와 함께 장기 연구 프로젝트를 수행해보세요.', link: 'http://inhalinc.inkoreahost.com/' },
+    ],
   },
   chill: {
     name: '자유로운 영혼', emoji: '🌴', color: ['#aee6f2', '#7fcfe0'], image: 'images/result_chill_new.jpg',
     desc: '학점보다 추억, 과제보다 여행! 대학 생활을 누구보다 즐기는 당신. 여유로운 태도 덕분에 주변 사람들이 편안함을 느껴요. 마감 직전의 집중력만큼은 누구도 따라올 수 없죠.',
     tags: ['#워라밸', '#낭만', '#벼락치기'],
     line: '오늘은\n휴강~', code: 'sleep(10000);',
+    action: [
+      { k: '프로젝트', t: '사진·여행·운동 같은 학교 밖 취미를 주제로 한 개인 블로그나 포트폴리오 사이트를 직접 만들어, 취미와 기술을 함께 기록해보세요.' },
+      { k: '학습법', t: '학기당 딱 1개, 부담 없는 교양 스터디나 소모임에 참여해 전공 밖의 시야를 넓혀보세요.' },
+      { k: '인하대 연계', t: '국제처의 교환학생 프로그램으로 한 학기 해외에서 지내며 견문을 넓혀보세요.', link: 'https://internationalcenter.inha.ac.kr/' },
+      { k: '인하대 연계', t: '인하아띠·인하인스타 같은 홍보대사나 ISN 서포터즈 같은 대외활동에 지원해 다양한 사람들과 협업하는 경험을 쌓아보세요.', link: 'https://admission.inha.ac.kr/cms/FR_CON/index.do?MENU_ID=310' },
+    ],
   },
 };
 const TYPE_ORDER = ['debugger', 'algo', 'startup', 'design', 'ai', 'chill'];
@@ -1035,8 +1073,14 @@ function showGuide(type) {
     ${got ? '' : `<p class="who">힌트: ${esc(t.name)}</p>`}
     <div class="tags">${t.tags.map((x) => `<span>${esc(x)}</span>`).join('')}</div>
     ${got ? `<p class="desc">${esc(t.desc)}</p>` : '<p class="desc" style="text-align:center;color:var(--muted)">아직 획득하지 못한 결과예요.</p>'}
+    <div class="guide action">
+      <h3>🚀 현실에서 이렇게 도전해보세요</h3>
+      <ol>${t.action.map((a) => `
+        <li><span class="k">${esc(a.k)}</span>${esc(a.t)}${a.link ? ` <a href="${esc(a.link)}" target="_blank" rel="noopener">${esc(a.link.replace(/^https?:\/\//, ''))}</a>` : ''}</li>`).join('')}
+      </ol>
+    </div>
     <div class="guide">
-      <h3>🧭 이 결과를 얻는 방법</h3>
+      <h3>🧭 게임에서 이 결과를 얻는 방법</h3>
       <ol>${steps.map((s) => `
         <li><span class="q">${esc(s.q.year)} · ${esc(pick(s.q.q).replace('{name}', profile.name).split('\n').pop())}${s.q.fixed || s.q.always ? ' · 매번 등장' : ''}</span>
         ${esc(s.q.options[s.i].t)}</li>`).join('')}
